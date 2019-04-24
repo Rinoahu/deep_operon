@@ -23,29 +23,31 @@ from sklearn.svm import LinearSVC as SVC
 import os
 from copy import deepcopy
 
-# set backend
-os.environ['KERAS_BACKEND'] = 'tensorflow'
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-from keras import backend as K
-# K.set_image_data_format('channels_first')
-
-try:
-    import theano.ifelse
-    from theano.ifelse import IfElse, ifelse
-except:
-    pass
-
-try:
-    from tensorflow import set_random_seed
-except:
-    set_random_seed = np.random.seed
+if 1:
+    # set backend
+    os.environ['KERAS_BACKEND'] = 'tensorflow'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+    from keras import backend as K
+    # K.set_image_data_format('channels_first')
 
 
-import torch
-from torch import nn
-from torch.autograd import Variable
-import torch.nn.functional as F
-import torch.utils.data as Data
+    try:
+        import theano.ifelse
+        from theano.ifelse import IfElse, ifelse
+    except:
+        pass
+
+    try:
+        from tensorflow import set_random_seed
+    except:
+        set_random_seed = np.random.seed
+
+
+    import torch
+    from torch import nn
+    from torch.autograd import Variable
+    import torch.nn.functional as F
+    import torch.utils.data as Data
 
 
 import chainer
@@ -713,6 +715,7 @@ def split_lstm_xxy(X0, X1, y, train_size=1. / 3, seed=42):
 # cnn based on pytorch
 ##########################################################################
 class Net_torch(nn.Module):
+#class Net_torch:
 
     def __init__(self, shape=(-1,-1,-1), nb_filter=32, nb_conv=3, nb_pool=2, adaptive=True):
         super(Net_torch, self).__init__()
@@ -1767,7 +1770,7 @@ if __name__ == '__main__':
     from keras.models import Sequential
     from keras.preprocessing import sequence
     from keras.layers import Dense, Dropout, Activation, Flatten, Embedding, BatchNormalization
-    from keras.layers import Input, Merge, LSTM, GRU, Bidirectional, UpSampling2D, InputLayer, CuDNNGRU
+    #from keras.layers import Input, Merge, LSTM, GRU, Bidirectional, UpSampling2D, InputLayer, CuDNNGRU
     from keras.optimizers import SGD, Adam, RMSprop
     from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2D
     from keras.utils import np_utils
