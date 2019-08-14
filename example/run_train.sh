@@ -3,9 +3,9 @@
 tstime='/usr/bin/time -v'
 #python deep_operon.py train all_in_one.fasta training_deep.txt
 
-bunzip2 all_in_one.fasta.bz2
+pbzip2 -d all_in_one.fasta.bz2
 python ../deep_operon.py train all_in_one.fasta training_deep.txt chainer
-bzip2 --best all_in_one.fasta
+pbzip2 --best all_in_one.fasta
 
 
 #python deep_operon.py predict all_in_one.fasta training_deep.txt training_deep.txt.lgb > training_deep.txt.lgb.predict_test2
@@ -14,9 +14,10 @@ bzip2 --best all_in_one.fasta
 #for i in *.hdf5
 #do
 #    echo $i
-#    python deep_operon.py predict all_in_one.fasta training_deep.txt $i > $i.predict_test2
-#    mv $i ./models
+#    python ../deep_operon.py predict all_in_one.fasta training_deep.txt $i > $i.predict_test2
+#    #mv $i ./models
 #done
+
 #python deep_operon.py predict all_in_one.fasta training_deep.txt training_deep.txt_2d > training_deep.txt.predict_test2
 
 #python deep_operon.py predict all_in_one.fasta training_deep.txt model3.hdf5 > training_deep.txt.predict3

@@ -12,6 +12,7 @@ import math
 from math import log, sqrt
 from collections import Counter
 import pickle
+import gc
 
 # from sklearn import cross_validation, metrics  # Additional scklearn
 # functions
@@ -56,6 +57,8 @@ import chainer.links as cL
 from chainer import training
 from chainer import Variable as Var
 from chainer.training import extensions
+from chainer import serializers
+
 #from chainer_sklearn.links import SklearnWrapperClassifier
 
 
@@ -70,8 +73,8 @@ from time import time
 
 # global parameters:
 global_kmr = 5
-global_len = 128
-global_split_rate = 1./3
+global_len = 256
+global_split_rate = 1./10
 global_epoch = 256
 
 #global_kmr = 5
@@ -686,7 +689,7 @@ def get_lstm_xxy(f, seq_dict, kmer=2, dim=128):
     #print max(map(len, X0)), min(map(len, X0)), X0[: 2]
 
     X0 = np.asarray(X0)
-    print('X0 shape', X0.shape)
+    print(('X0 shape', X0.shape))
     #print 'cat1, cat2, cai12, gc, skew, dist, distn, ratio, up10, up35'
     #print 'X1', X1[0]
     X1 = np.asarray(X1, 'float32')
@@ -791,7 +794,7 @@ def BCEloss(y, y_p, eps=1e-9):
 
     N = y.shape[0]
 
-    print 'Y_p', cF.log(1 - Y_p)
+    print('Y_p', cF.log(1 - Y_p))
     hs = Y*cF.log(Y_p+eps) + (1.-Y)*cF.log(1.-Y_p)
     h = hs.data.sum() / -N
     return h
@@ -819,6 +822,9 @@ class Net_ch(chainer.Chain):
             self.fc1=cL.Linear(None, 128)
             self.fc2=cL.Linear(None, n_out)
 
+        para = [nb_filter, nb_conv, nb_pool, n_out]
+        #self.add_persistent("n_out", n_out)
+        self.add_persistent("para", para)
 
     def __call__(self, X, t=None):
         #x = self.google(X)
@@ -1314,7 +1320,7 @@ class CNN:
         return y_p
 
 
-    # pytorch based cnn
+    # chainer based cnn
     def fit_chn(self, X_train, y_train, X_test=None, y_test=None):
         chainer.cuda.cudnn_enabled = True
 
@@ -1350,7 +1356,7 @@ class CNN:
         #cnn = Net()
         print(('model parameters', n_out))
         cnn.to_gpu()
-        optimizer = chainer.optimizers.Adam(5e-4)
+        optimizer = chainer.optimizers.Adam(5e-4, adabound=True)
         #optimizer = chainer.optimizers.MomentumSGD(1e-3)
         optimizer.setup(cnn)
         #optimizer.add_hook(chainer.optimizer.WeightDecay(5e-4))
@@ -1365,12 +1371,12 @@ class CNN:
         #y_test_p = np.empty(a_te, dtype='float32')
 
         best_model = None
-        for i in xrange(nb_epoch):
+        for i in range(nb_epoch):
             #np.random.seed(42)
             np.random.shuffle(idx_tr)
             loss_val = 0
             #optimizer.zero_grad()
-            for j in xrange(0, a_tr, batch_size):
+            for j in range(0, a_tr, batch_size):
                 idx = idx_tr[j:j+batch_size]
                 xn = X_train[idx]
                 yn = y_train[idx]
@@ -1415,7 +1421,7 @@ class CNN:
             prc = metrics.precision_score(y_train, y_train_p)
             rec = metrics.recall_score(y_train, y_train_p)
             f1 = metrics.f1_score(y_train, y_train_p)
-            print(('train iteration', i, 'precision:', prc, 'recall:', rec, 'f1:', f1, 'data_size:', X_train.shape, 'time:', time()-st)),
+            print((('train iteration', i, 'precision:', prc, 'recall:', rec, 'f1:', f1, 'data_size:', X_train.shape, 'time:', time()-st)), end=' ')
             #continue
 
             st = time()
@@ -1428,33 +1434,45 @@ class CNN:
 
             #print 'y_pred', Y_p, Y_t[:64]
             #if  f1 > f1_best and prc > .87 and rec > .87:
-            if  f1 > f1_best and prc > .87 and rec > .87:
+            #if  f1 > f1_best and prc > .84 and rec > .84:
+            if f1 > f1_best:
                 #best_model = deepcopy(cnn)
                 #if prc > .87 and rec > .87:
                 #    print 'best f1 score:', f1
                 #    #torch.save(cnn, 'pytch.pt')
                 #    self.model_2d = best_model
                 print('save best model')
-                self.model_2d = deepcopy(Net)
+                #self.model_2d = deepcopy(Net)
+                serializers.save_npz('my.model', Net)
+                self.model_2d = 1
                 f1_best = f1
+                raise SystemExit()
 
         if not self.model_2d:
             self.model_2d = Net
+        else:
+            serializers.load_npz('my.model', Net)
+            self.model_2d = Net
 
 
-    def predict_chn(self, X, model=None):
+
+    def predict_chn(self, X, model=None, train=True):
         cnn = model and model or self.model_2d
+        #print(model, cnn)
+
         N = X.shape[0]
         batch = self.batch_size
-        #print 'y size', N
+        #print('y size', N)
         #Y = Var(np.empty(N, dtype='int8'))
         Y = Var(np.empty(N, dtype='float32'))
-        Y.to_gpu()
-        for i in xrange(0, N, batch):
+        if train:
+            Y.to_gpu()
+        for i in range(0, N, batch):
             x = Var(np.asarray(X[i:i+batch], 'float32'))
-            #print 'x batch shape', x.shape
-            x.to_gpu()
+            if train:
+                x.to_gpu()
             y = cnn(x)
+            #print('y is', y)
             #y.to_cpu()
             #y = cF.argmax(y, 1).data
             y = cF.argmax(y, 1)
@@ -1469,11 +1487,25 @@ class CNN:
     # load an training model
     def load(self, name, mode='2d'):
         #model = keras.models.load_model(name, custom_objects={'f1_score': f1_score, 'tf': tf, 'fbeta_score': f1_score})
-        model = keras.models.load_model(name, custom_objects={'f1_score': f1_score, 'fbeta_score': f1_score})
         if mode == '2d' or mode == 'lstm':
+            model = keras.models.load_model(name, custom_objects={'f1_score': f1_score, 'fbeta_score': f1_score})
             self.model_2d = model
-        else:
+        elif mode == 'torch':
             pass
+        elif mode == 'chainer':
+            #print('name', name)
+            nets = np.load(name)
+            #nb_filter=32
+            #nb_pool=3
+            #nb_conv=2
+            #n_out = int(nets['n_out'])
+            nb_filter, nb_conv, nb_pool, n_out = nets['para']
+            del nets
+            gc.collect()
+
+            net = Net_ch(nb_filter, nb_conv, nb_pool, n_out)
+            serializers.load_npz(name, net)
+            self.model_2d = net
 
     # save the model
     def save(self, name, model='2d'):
@@ -1550,6 +1582,8 @@ def run_train(train, seq_dict, clf, mode='2d', rounds=0):
         X_train, X1_train, X2_train, y_train, X_test, X1_test, X2_test, y_test = split_xxy(
             X, X1, X2, y, split_rate)
         f.close()
+        print('X_test shape', X_test.shape, type(X_test))
+
         clf.fit_chn(X_train, y_train, X_test, y_test)
         y_test_pred = clf.predict_chn(X_test)
         y_train_pred = clf.predict_chn(X_train)
@@ -1589,16 +1623,16 @@ def run_train(train, seq_dict, clf, mode='2d', rounds=0):
     precise = metrics.precision_score(y_test, y_test_pred)
     recall = metrics.recall_score(y_test, y_test_pred)
     f1 = metrics.f1_score(y_test, y_test_pred)
-    print('test Precise:', precise)
-    print('test  Recall:', recall)
-    print('test      F1:', f1)
+    print(('test Precise:', precise))
+    print(('test  Recall:', recall))
+    print(('test      F1:', f1))
 
     precise = metrics.precision_score(y_train, y_train_pred)
     recall = metrics.recall_score(y_train, y_train_pred)
     f1 = metrics.f1_score(y_train, y_train_pred)
-    print('train Precise:', precise)
-    print('train Recall:', recall)
-    print('train     F1:', f1)
+    print(('train Precise:', precise))
+    print(('train Recall:', recall))
+    print(('train     F1:', f1))
 
 
 
@@ -1615,10 +1649,10 @@ def run_train_lgb(train, seq_dict, clf):
         X, X1, X2, y, split_rate)
     f.close()
 
-    print('data shape 1', X_train.shape, y_train.shape)
+    print(('data shape 1', X_train.shape, y_train.shape))
     a0, a1, a2, a3 = X_train.shape
     X_train = X_train.reshape(a0, a1 * a2 * a3)
-    print('data shape 2', X_train.shape, y_train.shape)
+    print(('data shape 2', X_train.shape, y_train.shape))
 
     clf.fit(X_train, y_train)
     # clf.save(train+'.lgb')
@@ -1634,9 +1668,9 @@ def run_train_lgb(train, seq_dict, clf):
     precise = metrics.precision_score(y_test, y_test_pred)
     recall = metrics.recall_score(y_test, y_test_pred)
     f1 = metrics.f1_score(y_test, y_test_pred)
-    print('Precise:', precise)
-    print(' Recall:', recall)
-    print('     F1:', f1)
+    print(('Precise:', precise))
+    print((' Recall:', recall))
+    print(('     F1:', f1))
 
 
 # run the adjacent prediction
@@ -1657,12 +1691,16 @@ def run_adjacent_predict(adjacent, seq_dict, model, clf, mode='2d'):
         if mode == '2d':
             x0, x1, x2 = get_xx_one(j, seq_dict, global_kmr, global_len, 'test')
             res = clf.predict_2d(x0)[0]
+        elif mode == 'chainer':
+            x0, x1, x2 = get_xx_one(j, seq_dict, global_kmr, global_len, 'test')
+            #print('x0 shape', x0.shape)
+            res = clf.predict_chn(x0, train=False)[0]
         else:
             x0, x1 = get_lstm_xx_one(j, seq_dict, global_kmr, global_len, 'test')
             res = clf.predict_lstm(x0)[0]
 
         res = res == 1 and 'True' or 'False'
-        print(i[: -1] + '\t' + str(res))
+        print((i[: -1] + '\t' + str(res)))
 
     f.close()
 
@@ -1687,7 +1725,7 @@ def run_adjacent_predict_lgb(adjacent, seq_dict, model, clf, mode='2d'):
         # print 'data shape', x0.shape, x1.shape
         res = clf.predict(x0)
         res = res == 1 and 'True' or 'False'
-        print(i[: -1] + '\t' + str(res))
+        print((i[: -1] + '\t' + str(res)))
 
     f.close()
 
@@ -1732,35 +1770,35 @@ def run_genome_predict(genome, seq_dict, model, clf, mode='2d'):
 
         res = res == 1 and 'True' or 'False'
         i = '\t'.join(map(str, j))
-        print(i + '\t' + str(res))
+        print((i + '\t' + str(res)))
 
 
 if __name__ == '__main__':
     import sys
     if len(sys.argv[1:]) < 3:
-        print('#' * 79)
+        print(('#' * 79))
         print('# To train a model:')
-        print('#' * 79)
+        print(('#' * 79))
         print('python this.py train foo.fasta foo.train.txt [mode]\n')
         print('foo.train.txt is the gene location in the format:')
         print('       locus1\tscf1\tstrand1\tstart1\tend1\tlocus2\tscf2\tstrand2\tstart2\tend2\tcat\n')
 
-        print('#' * 79)
+        print(('#' * 79))
         print('# To make a adjacent genes prediction')
-        print('#' * 79)
+        print(('#' * 79))
         print('python this.py adjacent foo.fasta foo.adjacent.txt foo.model [mode]\n')
         print('foo.adjacent.txt is the gene location in the format:')
         print('       locus1\tscf1\tstrand1\tstart1\tend1\tlocus2\tscf2\tstrand2\tstart2\tend2\n')
 
-        print('#' * 79)
+        print(('#' * 79))
         print('# To make a whole genome prediction')
-        print('#' * 79)
+        print(('#' * 79))
         print('python this.py genome foo.fasta foo.genome.txt foo.model [mode]')
         print('foo.genome.txt is the gene location in the format:')
         print('       locus1\tscf1\tstrand1\tstart1\tend1')
 
         print('')
-        print('#' * 79)
+        print(('#' * 79))
         print('start1/2: start of the gene in the genome, start > 0 need be adjust in the program')
         print('     cat: indicate whether  operon or not')
         print('    mode: 2d')
@@ -1804,9 +1842,9 @@ if __name__ == '__main__':
 
     elif model.startswith('predict'):
         if len(sys.argv[1:]) < 4:
-            print('#' * 79)
+            print(('#' * 79))
             print('# To make a adjacent genes prediction')
-            print('#' * 79)
+            print(('#' * 79))
             print('python this.py predict foo.fasta foo.adjacent.txt foo.model [mode]\n')
             print('foo.adjacent.txt is the gene location in the format:')
             print('       locus1\tscf1\tstrand1\tstart1\tend1\tlocus2\tscf2\tstrand2\tstart2\tend2\n')
@@ -1821,8 +1859,11 @@ if __name__ == '__main__':
         clf = CNN(nb_epoch=32, maxlen=128)
 
         # determine the number of col
+        #print('test', test)
         f = open(test, 'r')
-        header = f.next().split('\t')
+        #print(f.readline())
+        header = f.readline().split('\t')
+        #header = f.next().split('\t')
         f.close()
         if header.count('+') + header.count('-') > 1:
             #print 'try loading lstm or 2d model'

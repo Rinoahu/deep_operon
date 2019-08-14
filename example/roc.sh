@@ -2,6 +2,7 @@
 #qry=$1
 
 #for i in `ls ./*.predict*`
+#for i in ./*.predict*
 for i in ./*.predict*
 do
     echo $i
