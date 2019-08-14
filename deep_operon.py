@@ -1434,8 +1434,7 @@ class CNN:
 
             #print 'y_pred', Y_p, Y_t[:64]
             #if  f1 > f1_best and prc > .87 and rec > .87:
-            #if  f1 > f1_best and prc > .84 and rec > .84:
-            if f1 > f1_best:
+            if  f1 > f1_best and prc > .84 and rec > .84:
                 #best_model = deepcopy(cnn)
                 #if prc > .87 and rec > .87:
                 #    print 'best f1 score:', f1
@@ -1446,7 +1445,6 @@ class CNN:
                 serializers.save_npz('my.model', Net)
                 self.model_2d = 1
                 f1_best = f1
-                raise SystemExit()
 
         if not self.model_2d:
             self.model_2d = Net
