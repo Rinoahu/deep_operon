@@ -89,6 +89,7 @@ global_epoch = 256
 
 
 def f1_score_keras(y_true, y_pred):
+#def f1_score(y_true, y_pred):
     def recall(y_true, y_pred):
         """Recall metric.
 
@@ -124,6 +125,7 @@ def f1_score_keras(y_true, y_pred):
     #    return 0
 
 fbeta_score = f1_score_keras
+#fbeta_score = f1_score
 
 
 ##########################################################################
@@ -1018,6 +1020,7 @@ class CNN:
             filepath=save_path, verbose=1, save_best_only=True, mode='max', monitor='val_f1_score_keras')]
         #self.metric = keras.metrics.fbeta_score
         self.metric = f1_score_keras
+        #self.metric = f1_score
         self.cross_val = 1. / 3
 
     def fit_2d(self, X_train, y_train, X_test=None, y_test=None):
@@ -1486,7 +1489,10 @@ class CNN:
     def load(self, name, mode='2d'):
         #model = keras.models.load_model(name, custom_objects={'f1_score': f1_score, 'tf': tf, 'fbeta_score': f1_score})
         if mode == '2d' or mode == 'lstm':
-            model = keras.models.load_model(name, custom_objects={'f1_score': f1_score, 'fbeta_score': f1_score})
+            dependencies ={'f1_score_keras': f1_score_keras, 'fbeta_score': f1_score_keras}
+            model = keras.models.load_model(name, custom_objects=dependencies)
+            #model = keras.models.load_model(name, custom_objects={'fbeta_score': f1_score_keras})
+            #model = keras.models.load_model(name)
             self.model_2d = model
         elif mode == 'torch':
             pass

@@ -4,7 +4,7 @@ tstime='/usr/bin/time -v'
 #python deep_operon.py train all_in_one.fasta training_deep.txt
 
 pbzip2 -d all_in_one.fasta.bz2
-python ../deep_operon.py train all_in_one.fasta training_deep.txt chainer
+python ../deep_operon.py train all_in_one.fasta training_deep.txt 2d
 pbzip2 --best all_in_one.fasta
 
 
