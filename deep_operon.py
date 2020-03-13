@@ -959,8 +959,8 @@ class Net_ch(chainer.Chain):
             self.conv2=cL.Convolution2D(None, nb_filter*2, ksize=nb_conv)
             self.bn2 = cL.BatchNormalization(nb_filter*2)
 
-            self.vgg = cL.VGG16Layers()
-            self.google = cL.GoogLeNet()
+            #self.vgg = cL.VGG16Layers()
+            #self.google = cL.GoogLeNet()
             self.fc0 = cL.Linear(None, 256)
             self.fc1=cL.Linear(None, 128)
             self.fc2=cL.Linear(None, n_out)
@@ -1502,7 +1502,13 @@ class CNN:
         self.model_2d = None
         #cnn = Net()
         print(('model parameters', n_out))
-        cnn.to_gpu()
+
+        # enable gpu if available
+        try:
+            cnn.to_gpu()
+        except:
+            pass
+
         optimizer = chainer.optimizers.Adam(5e-4, adabound=True)
         #optimizer = chainer.optimizers.MomentumSGD(1e-3)
         optimizer.setup(cnn)
@@ -1535,8 +1541,13 @@ class CNN:
 
                 #yn = np.asarray(yn, 'float32')
                 X, Y = list(map(Var, (xn, yn)))
-                X.to_gpu()
-                Y.to_gpu()
+
+                # move data to gpu
+                try:
+                    X.to_gpu()
+                    Y.to_gpu()
+                except:
+                    pass
 
                 #Y_p = CNN(X)
                 #print 'Y Y_p', Y.shape, Y_p.shape, Y[:2, ], Y_p[:2, ]
@@ -1611,11 +1622,21 @@ class CNN:
         #Y = Var(np.empty(N, dtype='int8'))
         Y = Var(np.empty(N, dtype='float32'))
         if train:
-            Y.to_gpu()
+
+            try:
+                Y.to_gpu()
+            except:
+                pass
+
         for i in range(0, N, batch):
             x = Var(np.asarray(X[i:i+batch], 'float32'))
             if train:
-                x.to_gpu()
+
+                try:
+                    x.to_gpu()
+                except:
+                    pass
+
             y = cnn(x)
             #print('y is', y)
             #y.to_cpu()
@@ -1623,7 +1644,11 @@ class CNN:
             y = cF.argmax(y, 1)
             Y.data[i:i+batch] = y.data
 
-        Y.to_cpu()
+        try:
+            Y.to_cpu()
+        except:
+            pass
+
         #print Y.shape, Y.data[:5]
         #return Y.data.flatten() > .5
         return Y.data
