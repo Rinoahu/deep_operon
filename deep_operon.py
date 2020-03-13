@@ -926,14 +926,29 @@ class Net_torch(nn.Module):
 def BCEloss(y, y_p, eps=1e-9):
     #X = np.asarray(x.data, 'float32')
     #T = np.asarray(t.data, 'float32')
-    y.to_cpu()
+
+    try:
+        y.to_cpu()
+    except:
+        pass
+
     Y = Var(np.asarray(y.data, 'float32'))
-    y.to_gpu()
+    try:
+        y.to_gpu()
+    except:
+        pass
 
-    y_p.to_cpu()
+    try:
+        y_p.to_cpu()
+    except:
+        pass
+
     Y_p = Var(np.asarray(y_p.data, 'float32'))
-    y_p.to_gpu()
 
+    try:
+        y_p.to_gpu()
+    except:
+        pass
 
     N = y.shape[0]
 
