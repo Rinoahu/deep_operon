@@ -2004,7 +2004,7 @@ if __name__ == '__main__':
     from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
     from tensorflow.keras.models import Model
     from tensorflow.keras import backend as K
-    from tensorflow.keras import objectives
+    #from tensorflow.keras import objectives
     from tensorflow.keras.layers import Input, Dense, Lambda
     import numpy as np
 
