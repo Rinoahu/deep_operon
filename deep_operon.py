@@ -1998,7 +1998,7 @@ if __name__ == '__main__':
     from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Embedding, BatchNormalization
     #from tensorflow.keras.layers import Input, Merge, LSTM, GRU, Bidirectional, UpSampling2D, InputLayer, CuDNNGRU
     from tensorflow.keras.optimizers import SGD, Adam, RMSprop
-    from tensorflow.keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2D
+    from tensorflow.keras.layers import Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2D
     from tensorflow.keras.utils import np_utils
     from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
     from tensorflow.keras.models import Model
