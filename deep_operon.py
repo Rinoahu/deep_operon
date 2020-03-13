@@ -1181,7 +1181,8 @@ class CNN:
         # set the conv model
         model = Sequential()
         #model.add(Convolution2D(nb_filters, (nb_conv, nb_conv), border_mode='same', input_shape=(b, img_rows, img_cols), activation='relu', name='conv1_1', data_format='channels_first'))
-        model.add(Conv2D(nb_filters, (nb_conv, nb_conv), border_mode='same', input_shape=(b, img_rows, img_cols), activation='relu', name='conv1_1', data_format='channels_first'))
+        #model.add(Conv2D(nb_filters, (nb_conv, nb_conv), border_mode='same', input_shape=(b, img_rows, img_cols), activation='relu', name='conv1_1', data_format='channels_first'))
+        model.add(Conv2D(nb_filters, (nb_conv, nb_conv), padding='same', input_shape=(b, img_rows, img_cols), activation='relu', name='conv1_1', data_format='channels_first'))
         #model.add(Conv2D(nb_filters, 1, border_mode='same', input_shape=(b, img_rows, img_cols), name='conv1_1', data_format='channels_first'))
 
         #model.add(Conv2D(64, (3, 3), activation='relu', name='conv1_2', data_format='channels_first'))
