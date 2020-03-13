@@ -72,7 +72,8 @@ except:
 
 
 from tensorflow.python.keras import backend as K_tf
-from tensorflow.python.keras.optimizers import Optimizer_tf
+from tensorflow.python.keras.optimizers import Optimizer as Optimizer_tf
+
 
 class AdaBound(Optimizer_tf):
     """AdaBound optimizer.
