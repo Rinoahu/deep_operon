@@ -1143,7 +1143,7 @@ class CNN:
         self.maxlen = maxlen
         #self.opt = Adam(lr=5e-4, beta_1=0.995, beta_2=0.999, epsilon=1e-09)
         #self.opt = AdaBound(lr=1e-3, final_lr=0.1)
-        self.opt = AdaBound(lr=1e-3, final_lr=0.1, gamma=1e-3, weight_decay=0., amsbound=False)
+        self.opt = AdaBound(lr=1e-3, final_lr=0.1, gamma=1e-3, decay=0., amsbound=False)
 
         #self.checkpointer = [ModelCheckpoint(filepath=save_path, verbose=1, save_best_only=True, mode='max', monitor='val_fbeta_score')]
         self.checkpointer = [ModelCheckpoint(
