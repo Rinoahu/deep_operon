@@ -110,7 +110,10 @@ class AdaBound(Optimizer):
 
         with K.name_scope(self.__class__.__name__):
             self.iterations = K.variable(0, dtype='int64', name='iterations')
-            self.lr = K.variable(lr, name='lr')
+            try:
+                self.lr = K.variable(lr, name='lr')
+            except:
+                self.learning_rate = K.variable(lr, name='lr')
             self.beta_1 = K.variable(beta_1, name='beta_1')
             self.beta_2 = K.variable(beta_2, name='beta_2')
             self.decay = K.variable(decay, name='decay')
