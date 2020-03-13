@@ -185,8 +185,8 @@ from time import time
 
 # global parameters:
 global_kmr = 5
-global_len = 256
-global_split_rate = 1./10
+global_len = 128
+global_split_rate = 1/10.
 global_epoch = 256
 
 #global_kmr = 5
