@@ -21,7 +21,7 @@ from sklearn import metrics  # Additional scklearn functions
 # from sklearn.grid_search import GridSearchCV  # Perforing grid search
 from sklearn.svm import LinearSVC as SVC
 
-#from keras_adabound import AdaBound
+#from tensorflow.keras_adabound import AdaBound
 
 import os
 from copy import deepcopy
@@ -30,7 +30,7 @@ if 1:
     # set backend
     os.environ['KERAS_BACKEND'] = 'tensorflow'
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    from keras import backend as K
+    from tensorflow.keras import backend as K
     # K.set_image_data_format('channels_first')
 
 
@@ -72,8 +72,8 @@ except:
 
 
 
-from keras import backend as K
-from keras.optimizers import Optimizer
+from tensorflow.keras import backend as K
+from tensorflow.keras.optimizers import Optimizer
 
 class AdaBound(Optimizer):
     """AdaBound optimizer.
@@ -1992,19 +1992,19 @@ if __name__ == '__main__':
         print('    mode: 2d')
         raise SystemExit()
 
-    import keras
-    from keras.models import Sequential
-    from keras.preprocessing import sequence
-    from keras.layers import Dense, Dropout, Activation, Flatten, Embedding, BatchNormalization
-    #from keras.layers import Input, Merge, LSTM, GRU, Bidirectional, UpSampling2D, InputLayer, CuDNNGRU
-    from keras.optimizers import SGD, Adam, RMSprop
-    from keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2D
-    from keras.utils import np_utils
-    from keras.callbacks import ModelCheckpoint, TensorBoard
-    from keras.models import Model
-    from keras import backend as K
-    from keras import objectives
-    from keras.layers import Input, Dense, Lambda
+    from tensorflow import keras
+    from tensorflow.keras.models import Sequential
+    from tensorflow.keras.preprocessing import sequence
+    from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Embedding, BatchNormalization
+    #from tensorflow.keras.layers import Input, Merge, LSTM, GRU, Bidirectional, UpSampling2D, InputLayer, CuDNNGRU
+    from tensorflow.keras.optimizers import SGD, Adam, RMSprop
+    from tensorflow.keras.layers.convolutional import Convolution2D, MaxPooling2D, ZeroPadding2D, Conv2D
+    from tensorflow.keras.utils import np_utils
+    from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
+    from tensorflow.keras.models import Model
+    from tensorflow.keras import backend as K
+    from tensorflow.keras import objectives
+    from tensorflow.keras.layers import Input, Dense, Lambda
     import numpy as np
 
     model, fasta = sys.argv[1: 3]
